@@ -3,6 +3,7 @@ const path = require("path");
 const { connectToMongoDb } = require("./connection");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
+const PORT = process.env.PORT || 8001;
 const {
   redirectToActualURL,
   serverSideRenderingTest,
@@ -15,9 +16,14 @@ const userRoute = require("./routes/user");
 const adminRoute = require("./routes/adminRoute");
 const app = express();
 
-connectToMongoDb("mongodb://127.0.0.1:27017/short-url").then(() =>
-  console.log("Mongo Connected")
-);
+// const mongoUrl = process.env.MONGO_URL_LOCAL;
+const mongoUrl = process.env.MONGO_URL;
+// console.log(mongoUrl);
+connectToMongoDb(mongoUrl, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 50000, // Increase timeout to 50 seconds
+}).then(() => console.log("Mongo Connected"));
 
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
@@ -34,4 +40,4 @@ app.use("/", staticRoute);
 
 app.get("/url/:shortId", redirectToActualURL);
 app.get("/server/test", serverSideRenderingTest);
-app.listen(process.env.PORT || 8001, () => console.log("server started"));
+app.listen(PORT, () => console.log("server started"));
